@@ -313,9 +313,6 @@
               </div>
             </div>
           </div>
-
-          <datalist id="tagHistory"></datalist>
-
         </div>
 
         <div class="gm-toggle-wrapper">
@@ -369,7 +366,6 @@
             <option value="後攻">後攻</option>
           </select>
         </div>
-        <div>サブタグ: <input type="text" id="filterTag" placeholder="すべて" list="tagHistory" style="padding: 2px 4px; font-size: 13px; width: 90px; display: inline-block;"></div>
         <div>自分のクラス: 
           <select id="filterMyClass" style="padding: 2px 4px; font-size: 13px; width: auto; display: inline-block;">
             <option value="ALL">すべて</option>
@@ -537,10 +533,6 @@
         <label>自分のデッキタイプ</label>
         <input type="text" id="editMyType" list="editMyDeckTypeHistory">
         <datalist id="editMyDeckTypeHistory"></datalist>
-      </div>
-      <div class="form-group">
-        <label>サブタグ</label>
-        <input type="text" id="editMyTag" list="tagHistory">
       </div>
       
       <div class="form-group" id="editGemField">
@@ -744,7 +736,7 @@
     return isNaN(num) ? null : num;
   };
 
-  const savedFields = ['formatInput', 'seasonInput', 'myClass', 'myType', 'myTag', 'gemClass', 'gmGroup', 'userRank'];
+  const savedFields = ['formatInput', 'seasonInput', 'myClass', 'myType', 'gemClass', 'gmGroup', 'userRank'];
   const gmInitialRateStorageKey = 'swb_gmNextInitialRate';
 
   function getStoredInitialRate(cls) {
@@ -913,13 +905,6 @@
     });
     document.getElementById('deckLibraryList').innerHTML = Array.from(deckNames).map(n => `<option value="${n}">`).join('');
 
-    const tags = new Set();
-    matches.forEach(m => {
-      if (m.myTag) tags.add(m.myTag);
-    });
-
-    document.getElementById('tagHistory').innerHTML = Array.from(tags).map(t => `<option value="${t}">`).join('');
-
     const myTypes = new Set();
     decks.forEach(d => { if (d.title) myTypes.add(d.title); });
     matches.forEach(m => { if (m.myType) myTypes.add(m.myType); });
@@ -979,7 +964,6 @@
         season: document.getElementById('seasonInput').value.trim() || '未設定',
         myClass: cls,
         myType: document.getElementById('myType').value.trim(),
-        myTag: document.getElementById('myTag').value.trim(),
         gemClass: isGM.checked ? "" : document.getElementById('gemClass').value,
         oppClass: document.getElementById('oppClass').value,
         oppType: document.getElementById('oppType').value.trim(),
@@ -1093,8 +1077,7 @@
     decks.forEach(d => { if (d.className === myCls && d.title) myTypes.add(d.title); });
     document.getElementById('editMyDeckTypeHistory').innerHTML = Array.from(myTypes).map(t => `<option value="${t}">`).join('');
     document.getElementById('editMyType').value = m.myType || '';
-    document.getElementById('editMyTag').value = m.myTag || '';
-
+  
     if (m.isGM) {
       document.getElementById('editGemField').style.display = 'none';
       document.getElementById('editRateField').style.display = 'flex';
@@ -1127,7 +1110,6 @@
       const updateData = {
         myClass: document.getElementById('editMyClass').value,
         myType: document.getElementById('editMyType').value.trim(),
-        myTag: document.getElementById('editMyTag').value.trim(),
         oppClass: document.getElementById('editOppClass').value,
         oppType: document.getElementById('editOppType').value.trim(),
         turn: document.getElementById('editTurn').value,
@@ -1226,7 +1208,6 @@
   document.getElementById('filterSeason').addEventListener('change', renderAll);
   document.getElementById('filterFormat').addEventListener('change', renderAll);
   document.getElementById('filterTurn').addEventListener('change', renderAll);
-  document.getElementById('filterTag').addEventListener('input', renderAll);
   document.getElementById('filterMyClass').addEventListener('change', renderAll);
   document.getElementById('filterMyType').addEventListener('input', renderAll);
   document.getElementById('filterEnemyClass').addEventListener('change', renderAll);
@@ -1238,7 +1219,6 @@
     const season = document.getElementById('filterSeason').value;
     const format = document.getElementById('filterFormat').value;
     const turn = document.getElementById('filterTurn').value;
-    const tagFilter = document.getElementById('filterTag').value.trim();
     const myClassFilter = document.getElementById('filterMyClass').value;
     const myTypeFilter = document.getElementById('filterMyType').value.trim();
     const enemyClassFilter = document.getElementById('filterEnemyClass').value;
@@ -1248,7 +1228,6 @@
     if (season !== 'ALL') filtered = filtered.filter(m => m.season === season);
     if (format !== 'ALL') filtered = filtered.filter(m => m.format === format);
     if (turn !== 'ALL') filtered = filtered.filter(m => m.turn === turn);
-    if (tagFilter !== '') filtered = filtered.filter(m => m.myTag === tagFilter);
     if (myClassFilter !== 'ALL') filtered = filtered.filter(m => m.myClass === myClassFilter);
     if (myTypeFilter !== '') filtered = filtered.filter(m => (m.myType || '').toLowerCase() === myTypeFilter.toLowerCase());
     if (enemyClassFilter !== 'ALL') filtered = filtered.filter(m => m.oppClass === enemyClassFilter);
@@ -1397,7 +1376,6 @@
     }
 
     data.forEach(m => {
-      const tagHTML = m.myTag ? `<span class="tag-badge">${m.myTag}</span>` : '';
       const gemHTML = m.gemClass ? `<span style="color:var(--orkis-cyan); font-weight:bold; font-size:0.72rem;">[${m.gemClass}]</span>` : '';
       const formatHTML = m.format ? `<span style="font-size:0.7rem; color:var(--text-sub);">[${m.format}]</span>` : '';
       const turnBadge = `<span style="font-size:0.7rem; background:rgba(155,89,182,0.15); border:1px solid var(--orkis-purple); padding:0 3px; border-radius:3px; color:var(--orkis-cyan); font-weight:bold;">${m.turn}</span>`;
@@ -1407,7 +1385,7 @@
           <div>
             <span class="badge ${m.result === 'WIN' ? 'badge-win' : 'badge-lose'}">${m.result}</span>
             ${turnBadge}
-            <strong>${m.myClass}(${m.myType})</strong>${tagHTML} vs ${m.oppClass}(${m.oppType})
+            <strong>${m.myClass}(${m.myType})</strong> vs ${m.oppClass}(${m.oppType})
             ${formatHTML}
             <br><span style="font-size:0.75rem; color:var(--text-sub);">${gemHTML} ${m.isGM ? `${m.rank} ${m.rateChange > 0 ? '+' : ''}${m.rateChange}pt` : m.rank}</span>
           </div>

@@ -1447,8 +1447,7 @@
     });
   }
 
-  loadSavedInputs();
-// 指定したシーズン名を一括変更する関数（Firebase v9対応版）
+// 指定したシーズン名を一括変更する関数（互換ループ更新版）
 window.renameSeasonBulk = async (oldSeason, newSeason) => {
   if (!oldSeason || !newSeason) {
     alert("変更前と変更後のシーズン名を両方指定してください。");
@@ -1466,15 +1465,14 @@ window.renameSeasonBulk = async (oldSeason, newSeason) => {
   }
 
   try {
-    // v9形式の writeBatch を作成
-    const batch = firebase.firestore().batch();
-    
-    targetMatches.forEach(m => {
-      const docRef = firebase.firestore().collection("matches").doc(m.id);
-      batch.update(docRef, { season: newSeason });
+    // 1件ずつ安全に更新
+    const promises = targetMatches.map(m => {
+      return db.collection("matches").doc(m.id).update({
+        season: newSeason
+      });
     });
 
-    await batch.commit();
+    await Promise.all(promises);
     alert("一括更新が完了しました！");
   } catch (e) {
     console.error("一括更新エラー:", e);

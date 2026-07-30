@@ -409,18 +409,6 @@
       <h2><span style="color: var(--silver-accent);">🧵</span> ログ履歴</h2>
       <div class="history-list" id="historyList"></div>
     </div>
-
-    <!-- シーズン名一括変更エリア -->
-<div style="margin-top: 20px; padding: 15px; border: 1px solid #ccc; border-radius: 8px;">
-  <h3>シーズン名の一括変更</h3>
-  <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-    <input type="text" id="oldSeasonInput" placeholder="変更前のシーズン名 (例: 第1期)">
-    <span>→</span>
-    <input type="text" id="newSeasonInput" placeholder="新しいシーズン名 (例: 第1弾)">
-    <button type="button" id="btnRenameSeason">一括変更実行</button>
-  </div>
-</div>
-
   </div>
 
   <!-- ==================== 第2章: 大会戦績ノート ==================== -->
@@ -1458,46 +1446,6 @@
     });
   }
 
-// ボタンをクリックした時の処理
-document.getElementById('btnRenameSeason').addEventListener('click', async () => {
-  const oldSeason = document.getElementById('oldSeasonInput').value.trim();
-  const newSeason = document.getElementById('newSeasonInput').value.trim();
-
-  if (!oldSeason || !newSeason) {
-    alert("変更前と変更後のシーズン名を両方入力してください。");
-    return;
-  }
-
-  // 該当する対戦データを取得
-  const targetMatches = matches.filter(m => m.season === oldSeason);
-  if (targetMatches.length === 0) {
-    alert(`「${oldSeason}」の記録が見つかりませんでした。`);
-    return;
-  }
-
-  if (!confirm(`「${oldSeason}」の記録（${targetMatches.length}件）をすべて「${newSeason}」に変更しますか？`)) {
-    return;
-  }
-
-  try {
-    // 1件ずつ更新処理を実行
-    const promises = targetMatches.map(m => {
-      const docRef = doc(db, "matches", m.id);
-      return updateDoc(docRef, { season: newSeason });
-    });
-
-    await Promise.all(promises);
-
-    alert("シーズン名を一括変更しました！");
-    
-    // 入力欄をクリア
-    document.getElementById('oldSeasonInput').value = "";
-    document.getElementById('newSeasonInput').value = "";
-  } catch (e) {
-    console.error("一括更新エラー:", e);
-    alert("一括更新に失敗しました。");
-  }
-});
 </script>
 </body>
 </html>

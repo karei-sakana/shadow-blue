@@ -1448,37 +1448,39 @@
   }
 
   loadSavedInputs();
+// 指定したシーズン名を一括変更する関数（Firebase v9対応版）
+window.renameSeasonBulk = async (oldSeason, newSeason) => {
+  if (!oldSeason || !newSeason) {
+    alert("変更前と変更後のシーズン名を両方指定してください。");
+    return;
+  }
 
-  window.renameSeasonBulk = async (oldSeason, newSeason) => {
-      if (!oldSeason || !newSeason) {
-        alert("変更前と変更後のシーズン名を両方指定してください。");
-        return;
-      }
+  const targetMatches = matches.filter(m => m.season === oldSeason);
+  if (targetMatches.length === 0) {
+    alert(`「${oldSeason}」の記録が見つかりませんでした。`);
+    return;
+  }
 
-      const targetMatches = matches.filter(m => m.season === oldSeason);
-      if (targetMatches.length === 0) {
-        alert(`「${oldSeason}」の記録が見つかりませんでした。`);
-        return;
-      }
+  if (!confirm(`「${oldSeason}」の記録（${targetMatches.length}件）をすべて「${newSeason}」に変更しますか？`)) {
+    return;
+  }
 
-      if (!confirm(`「${oldSeason}」の記録（${targetMatches.length}件）をすべて「${newSeason}」に変更しますか？`)) {
-        return;
-      }
+  try {
+    // v9形式の writeBatch を作成
+    const batch = firebase.firestore().batch();
+    
+    targetMatches.forEach(m => {
+      const docRef = firebase.firestore().collection("matches").doc(m.id);
+      batch.update(docRef, { season: newSeason });
+    });
 
-      try {
-        const batch = db.batch();
-        targetMatches.forEach(m => {
-          const ref = db.collection("matches").doc(m.id);
-          batch.update(ref, { season: newSeason });
-        });
-        await batch.commit();
-        alert("一括更新が完了しました！");
-      } catch (e) {
-        console.error("一括更新エラー:", e);
-        alert("一括更新に失敗しました。");
-      }
-    };
-  
+    await batch.commit();
+    alert("一括更新が完了しました！");
+  } catch (e) {
+    console.error("一括更新エラー:", e);
+    alert("一括更新に失敗しました。");
+  }
+};
 </script>
 </body>
 </html>
